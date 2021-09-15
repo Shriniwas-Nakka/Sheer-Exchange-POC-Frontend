@@ -1,0 +1,19 @@
+.tag-main {
+  width: 100%;
+  padding: 40px 0px;
+  /* border: 1px solid; */
+  margin-bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  /* align-items: center; */
+}
+
+.tag {
+  /* min-height: 30px; */
+  background-color: #f24a58;
+  min-width: 30px;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 8px;
+}

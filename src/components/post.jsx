@@ -240,19 +240,19 @@ export default class Post extends React.Component {
           >
             <Avatar
               alt="Remy Sharp"
-              src={this.props.post.createdBy.profileUrl}
+              src={this.props.post.user.profileUrl}
             />
             <Typography
               variant="subtitle1"
               style={{ margin: "6px 0px 0px 10px" }}
             >
-              {this.props.post.createdBy.firstName +
+              {this.props.post.user.firstName +
                 " " +
-                this.props.post.createdBy.lastName}
+                this.props.post.user.lastName}
             </Typography>
           </div>
           {JSON.parse(sessionStorage.getItem("userdata"))._id ===
-          this.props.post.createdBy._id.toString() ? (
+          this.props.post.user._id.toString() ? (
             <IconButton
               aria-label="delete"
               onClick={(e) => this.edit(e, this.props.post)}

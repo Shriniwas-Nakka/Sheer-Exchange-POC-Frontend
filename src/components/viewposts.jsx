@@ -3,23 +3,14 @@ import axios from "axios";
 import Typography from "@material-ui/core/Typography";
 import Button from "@material-ui/core/Button";
 import IconButton from "@material-ui/core/IconButton";
-import ThumbUpAltIcon from "@material-ui/icons/ThumbUpAlt";
-import ThumbDownIcon from "@material-ui/icons/ThumbDown";
-import VisibilityIcon from "@material-ui/icons/Visibility";
-import CommentIcon from "@material-ui/icons/Comment";
-import MoreVertIcon from "@material-ui/icons/MoreVert";
 import SearchIcon from "@material-ui/icons/Search";
 import Avatar from "@material-ui/core/Avatar";
 import "./viewposts.css";
-import AssessmentIcon from "@material-ui/icons/Assessment";
-import CanvasJSReact from "../assests/canvasjs.react";
-import TextField from "@material-ui/core/TextField";
-import SendIcon from "@material-ui/icons/Send";
-import EditIcon from "@material-ui/icons/Edit";
+import InputLabel from "@material-ui/core/InputLabel";
+import FormControl from "@material-ui/core/FormControl";
+import Select from "@material-ui/core/Select";
 import Post from "./post";
-
-var CanvasJS = CanvasJSReact.CanvasJS;
-var CanvasJSChart = CanvasJSReact.CanvasJSChart;
+import Tags from "./tags";
 
 export default class View extends React.Component {
   constructor(props) {
@@ -37,7 +28,7 @@ export default class View extends React.Component {
   }
 
   componentDidMount() {
-    this.getAll();
+    this.getAll("ALL");
   }
 
   filterAnswer = (value) => {
@@ -46,8 +37,9 @@ export default class View extends React.Component {
     });
   };
 
-  getAll = async () => {
-    let posts = await this.getPosts();
+  getAll = async (key = "ALL", value = null) => {
+    console.log(key);
+    let posts = await this.getPosts(key, value);
     let postAnswers = await this.getPollAnswers();
     let array = posts.map((post) => {
       return {
@@ -74,14 +66,16 @@ export default class View extends React.Component {
       });
   };
 
-  getPosts() {
+  getPosts(key, value = null) {
+    console.log(key, value);
     return axios
-      .get("http://localhost:5000/pollposts", {
+      .get(`http://localhost:5000/pollposts?key=${key}&value=${value}`, {
         headers: {
           token: JSON.parse(sessionStorage.getItem("userdata")).token,
         },
       })
       .then((response) => {
+        console.log(response.data.data);
         return response.data.data;
       });
   }
@@ -101,7 +95,7 @@ export default class View extends React.Component {
       })
       .then((response) => {
         console.log(response);
-        this.getAll();
+        this.getAll("ALL");
       });
   };
 
@@ -119,7 +113,7 @@ export default class View extends React.Component {
       })
       .then((response) => {
         console.log(response);
-        this.getAll();
+        this.getAll("ALL");
       });
   };
 
@@ -139,7 +133,7 @@ export default class View extends React.Component {
         })
         .then((response) => {
           console.log(response);
-          this.getAll();
+          this.getAll("ALL");
         });
     }
   };
@@ -223,7 +217,7 @@ export default class View extends React.Component {
       .then((response) => {
         console.log(response);
         this.handleComment(e, post);
-        this.getAll();
+        this.getAll("ALL");
         this.setState({ commentText: "" });
       });
   };
@@ -255,6 +249,13 @@ export default class View extends React.Component {
 
   searchUserProfile = () => {
     this.props.history.push({ pathname: "/search" });
+  };
+
+  handleCountry = (event) => {
+    console.log(event.target.value);
+    event.target.value === "default"
+      ? this.getAll("ALL")
+      : this.getAll("COUNTRY", event.target.value);
   };
 
   render() {
@@ -310,6 +311,29 @@ export default class View extends React.Component {
               ( {JSON.parse(sessionStorage.getItem("userdata")).role} )
             </Typography>
           </div>
+          <div>
+            <FormControl variant="outlined">
+              <InputLabel htmlFor="outlined-age-native-simple">
+                Country
+              </InputLabel>
+              <Select
+                native
+                // value={state.age}
+                onChange={this.handleCountry}
+                label="Country"
+                // inputProps={{
+                //   name: "age",
+                //   id: "outlined-age-native-simple",
+                // }}
+              >
+                {/* <option aria-label="None" value="default" /> */}
+                <option value={"default"}>Default</option>
+                <option value={"india"}>India</option>
+                <option value={"america"}>America</option>
+                <option value={"japan"}>Japan</option>
+              </Select>
+            </FormControl>
+          </div>
           <div
             style={{
               display: "flex",
@@ -335,6 +359,7 @@ export default class View extends React.Component {
             </Button>
           </div>
         </div>
+        <Tags />
         {this.state.posts.map((post, index) => (
           <Post
             index={index}
@@ -342,242 +367,6 @@ export default class View extends React.Component {
             answers={this.state.answers}
             getAll={this.getAll}
           />
-          // <div className="main" key={index}>
-          //   <div className="nameplate">
-          //     <div
-          //       style={{
-          //         display: "flex",
-          //         justifyContent: "space-between",
-          //         alignItems: "center",
-          //       }}
-          //     >
-          //       <Avatar alt="Remy Sharp" src={post.createdBy.profileUrl} />
-          //       <Typography
-          //         variant="subtitle1"
-          //         style={{ margin: "6px 0px 0px 10px" }}
-          //       >
-          //         {post.createdBy.firstName + " " + post.createdBy.lastName}
-          //       </Typography>
-          //     </div>
-          //     {JSON.parse(sessionStorage.getItem("userdata"))._id ===
-          //     post.createdBy._id.toString() ? (
-          //       <IconButton
-          //         aria-label="delete"
-          //         onClick={(e) => this.edit(e, post)}
-          //       >
-          //         <EditIcon />
-          //       </IconButton>
-          //     ) : (
-          //       ""
-          //     )}
-          //   </div>
-          //   <Typography variant="h6" gutterBottom>
-          //     {post.subject}
-          //   </Typography>
-          //   <Typography variant="body2" align="left" gutterBottom>
-          //     {post.description}
-          //   </Typography>
-          //   <Typography variant="body1" gutterBottom>
-          //     {post.question.question}
-          //   </Typography>
-          //   {post.question.options.map((option, index) => (
-          //     <>
-          //       {!post.answered ? (
-          //         <Button
-          //           className="m"
-          //           key={index}
-          //           variant="contained"
-          //           // color="secondary"
-          //           // disabled={post.answered.flag}
-          //           color={
-          //             this.filterAnswer(option._id) ? "secondary" : "default"
-          //           }
-          //           onClick={(e) => this.answerPoll(e, post, option._id)}
-          //         >
-          //           {option.option}
-          //         </Button>
-          //       ) : (
-          //         <div
-          //           style={{
-          //             margin: "12px 0",
-          //             display: "flex",
-          //             alignItems: "center",
-          //             position: "relative",
-          //             backgroundColor: "lightgrey",
-          //             width: "100%",
-          //             height: "50px",
-          //             borderRadius: "25px",
-          //           }}
-          //         >
-          //           <div
-          //             className="bar"
-          //             style={{
-          //               width: `${option.percentage}%`,
-          //               backgroundColor: this.filterAnswer(option._id)
-          //                 ? "#F24A58"
-          //                 : "#E0E0E0",
-          //             }}
-          //           ></div>
-          //           <span
-          //             style={{
-          //               zIndex: "1",
-          //               textAlign: "center",
-          //               width: "100%",
-          //               display: "flex",
-          //               justifyContent: "space-around",
-          //             }}
-          //           >
-          //             <Typography variant="subtitle1" align="left" gutterBottom>
-          //               {option.option}
-          //             </Typography>
-          //             <Typography variant="subtitle1" align="left" gutterBottom>
-          //               {option.percentage.toFixed(2)}%
-          //             </Typography>
-          //           </span>
-          //         </div>
-          //       )}
-          //     </>
-          //   ))}
-          //   <div className="buttons">
-          //     <IconButton
-          //       aria-label="delete"
-          //       color={this.setLikeDislikes(post.voters, "like")}
-          //       onClick={(e) => this.vote(e, post._id, true)}
-          //     >
-          //       <ThumbUpAltIcon />
-          //     </IconButton>
-          //     {post.likes}
-          //     <IconButton
-          //       aria-label="delete"
-          //       color={this.setLikeDislikes(post.voters, "dislike")}
-          //       onClick={(e) => this.vote(e, post._id, false)}
-          //     >
-          //       <ThumbDownIcon />
-          //     </IconButton>
-          //     {post.dislikes}
-          //     <IconButton
-          //       aria-label="delete"
-          //       onClick={(e) => this.viewPost(e, post._id)}
-          //     >
-          //       <VisibilityIcon />
-          //     </IconButton>
-          //     {post.views}
-          //     <IconButton
-          //       aria-label="delete"
-          //       onClick={(e) => this.handleComment(e, post._id)}
-          //     >
-          //       <CommentIcon />
-          //     </IconButton>
-          //     {post.comments}
-          //     <IconButton
-          //       aria-label="delete"
-          //       onClick={(e) => this.report(e, post._id)}
-          //     >
-          //       <AssessmentIcon />
-          //     </IconButton>
-          //   </div>
-          //   {post._id === this.state.openComment && (
-          //     <div style={{ width: "100%", marginTop: "20px" }}>
-          //       <Typography variant="h6" align="left" gutterBottom>
-          //         Comments
-          //       </Typography>
-          //       {this.state.comments.length > 0 && (
-          //         <div
-          //           style={{
-          //             width: "100%",
-          //             border: "1px solid lightgray",
-          //             borderRadius: "5px",
-          //             marginBottom: "20px",
-          //             maxHeight: "400px",
-          //             overflowY: "scroll",
-          //           }}
-          //         >
-          //           {this.state.comments.map((comment, index) => (
-          //             <div
-          //               key={index}
-          //               style={{
-          //                 margin: "10px",
-          //                 backgroundColor: "lightgrey",
-          //                 width: "70%",
-          //                 padding: "10px",
-          //                 borderRadius: "6px",
-          //               }}
-          //             >
-          //               <div
-          //                 style={{
-          //                   display: "flex",
-          //                   alignItems: "center",
-          //                 }}
-          //               >
-          //                 <Avatar
-          //                   alt="Remy Sharp"
-          //                   src={comment.userId.profileUrl}
-          //                 />
-          //                 <Typography
-          //                   variant="subtitle1"
-          //                   style={{ margin: "6px 0px 0px 10px" }}
-          //                 >
-          //                   {comment.userId.firstName +
-          //                     " " +
-          //                     comment.userId.lastName}
-          //                 </Typography>
-          //               </div>
-          //               <Typography
-          //                 variant="subtitle2"
-          //                 align="left"
-          //                 style={{ margin: "0px 0px 0px 50px" }}
-          //                 gutterBottom
-          //               >
-          //                 {comment.text}
-          //               </Typography>
-          //             </div>
-          //           ))}
-          //         </div>
-          //       )}
-          //       <div
-          //         style={{
-          //           display: "flex",
-          //           alignItems: "flex-start",
-          //         }}
-          //       >
-          //         <TextField
-          //           id="outlined-basic"
-          //           name="commentText"
-          //           value={this.state.subject}
-          //           label="Text"
-          //           variant="outlined"
-          //           onChange={this.handleCommentText}
-          //           className="mb"
-          //           size="small"
-          //           style={{ width: "100%" }}
-          //         />
-          //         <IconButton
-          //           aria-label="delete"
-          //           onClick={(e) => this.send(e, post._id)}
-          //         >
-          //           <SendIcon />
-          //         </IconButton>
-          //       </div>
-          //     </div>
-          //   )}
-          //   {post._id === this.state.openReport && (
-          //     <div style={{ width: "100%", marginTop: "20px" }}>
-          //       <Typography variant="h6" align="left" gutterBottom>
-          //         Poll Result
-          //       </Typography>
-          //       <Typography variant="body1" align="left" gutterBottom>
-          //         Total Votes : {this.state.report.totalVotes}
-          //       </Typography>
-          //       <Typography variant="body1" align="left" gutterBottom>
-          //         User : {this.state.report.totalNumberOfUsersVoted}
-          //       </Typography>
-          //       <Typography variant="body1" align="left" gutterBottom>
-          //         Guest : {this.state.report.totalNumberOfGuestssVoted}
-          //       </Typography>
-          //       <CanvasJSChart options={options} />
-          //     </div>
-          //   )}
-          // </div>
         ))}
       </div>
     );

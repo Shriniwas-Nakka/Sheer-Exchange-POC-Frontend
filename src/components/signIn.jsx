@@ -2,6 +2,7 @@ import React from "react";
 import axios from "axios";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
+import Chart from "./chart";
 import "./signIn.css";
 
 export default class SignIn extends React.Component {
@@ -13,15 +14,31 @@ export default class SignIn extends React.Component {
     };
   }
 
+  componentDidMount() {
+    navigator.geolocation.getCurrentPosition((data) => {
+      console.log(data);
+      axios
+        .get(
+          // `http://maps.googleapis.com/maps/api/geocode/json?latlng=${data.coords.latitude},${data.coords.longitude}&sensor=false.`
+          `https://api.opencagedata.com/geocode/v1/json?q=${data.coords.latitude}+${data.coords.longitude}&key=f9553ca7225745328988cc671bee371a`
+        )
+        .then((response) => {
+          console.log(response);
+        });
+    });
+  }
+
   handleTextChange = (event) => {
     this.setState({ [event.target.name]: event.target.value });
   };
 
   submit = () => {
-      axios.post("http://localhost:5000/user/signIn", this.state).then((response) => {
+    axios
+      .post("http://localhost:5000/user/signIn", this.state)
+      .then((response) => {
         console.log(response);
         sessionStorage.setItem("userdata", JSON.stringify(response.data.data));
-        this.props.history.push('/dashboard/posts');
+        this.props.history.push("/dashboard/posts");
       });
   };
 
@@ -54,6 +71,7 @@ export default class SignIn extends React.Component {
             Submit
           </Button>
         </div>
+        {/* <Chart /> */}
       </div>
     );
   }
