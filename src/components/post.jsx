@@ -16,11 +16,18 @@ import CanvasJSReact from "../assests/canvasjs.react";
 import TextField from "@material-ui/core/TextField";
 import SendIcon from "@material-ui/icons/Send";
 import EditIcon from "@material-ui/icons/Edit";
+// import { createHashHistory } from "history";
+
+// const history = createHashHistory();
+
+// import { useHistory } from "react-router-dom";
+// const history = useHistory();
+import { withRouter } from "react-router-dom";
 
 var CanvasJS = CanvasJSReact.CanvasJS;
 var CanvasJSChart = CanvasJSReact.CanvasJSChart;
 
-export default class Post extends React.Component {
+class Post extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -111,7 +118,10 @@ export default class Post extends React.Component {
           this.setState({
             reportData: response.data.data.data.map((element) => {
               return {
-                y: element.percentage.toFixed(2),
+                y:
+                  element.percentage > 0
+                    ? element.percentage.toFixed(2)
+                    : element.percentage,
                 label: element.option,
               };
             }),
@@ -176,27 +186,52 @@ export default class Post extends React.Component {
       });
   };
 
-  setLikeDislikes = (votes, selector) => {
-    if (votes.length > 0) {
-      if (selector === "like") {
-        if (votes[0].vote === true) return "primary";
-        return "default";
-      }
-      if (selector === "dislike") {
-        if (votes[0].vote === false) return "primary";
+  setLikeDislikes = (post, selector) => {
+    // console.log(post.polllikes);
+
+    if (post.polllikes.length > 0) {
+      // console.log(post.likes);
+      let likes = post.polllikes.filter((like) => like.pollId === post._id);
+      console.log("---->", likes);
+      if (likes.length > 0) {
+        if (selector === "like") {
+          if (likes[0].vote === true) return "primary";
+          return "default";
+        }
+        if (selector === "dislike") {
+          if (likes[0].vote === false) return "primary";
+          return "default";
+        }
+      } else {
         return "default";
       }
     } else {
       return "default";
     }
+
+    // let likes = post.likes.map((like) => like.pollId === post._id);
+    // console.log(likes);
+    // if (likes.length > 0) {
+    //   if (selector === "like") {
+    //     if (likes[0].vote === true) return "primary";
+    //     return "default";
+    //   }
+    //   if (selector === "dislike") {
+    //     if (likes[0].vote === false) return "primary";
+    //     return "default";
+    //   }
+    // } else {
+    //   return "default";
+    // }
   };
 
   edit = (e, value) => {
     e.preventDefault();
-    console.log(value);
+    // console.log(value);
     let count =
       value.likes + value.dislikes + value.comments + value.totalNumberOfVotes;
-    console.log(count);
+    // console.log(count);
+    // console.log(value);
     if (count <= 0)
       this.props.history.push({ pathname: "/dashboard", state: value });
   };
@@ -238,10 +273,7 @@ export default class Post extends React.Component {
               alignItems: "center",
             }}
           >
-            <Avatar
-              alt="Remy Sharp"
-              src={this.props.post.user.profileUrl}
-            />
+            <Avatar alt="Remy Sharp" src={this.props.post.user.profileUrl} />
             <Typography
               variant="subtitle1"
               style={{ margin: "6px 0px 0px 10px" }}
@@ -321,17 +353,49 @@ export default class Post extends React.Component {
                     {option.option}
                   </Typography>
                   <Typography variant="subtitle1" align="left" gutterBottom>
-                    {option.percentage.toFixed(2)}%
+                    {option.percentage > 0
+                      ? option.percentage.toFixed(2)
+                      : option.percentage}
+                    %
                   </Typography>
                 </span>
               </div>
             )}
           </>
         ))}
+        {this.props.post.tagUsers.length > 0 && (
+          <div style={{ display: "flex", alignItems: "center" }}>
+            Tagged To :
+            {this.props.post.tagUsers.map((user, index) => (
+              <Typography
+                key={index}
+                variant="subtitle1"
+                align="left"
+                style={{
+                  textTransform: "lowercase",
+                  margin: "6px 6px",
+                  cursor: "pointer",
+                }}
+              >
+                @{user.userName}
+              </Typography>
+            ))}
+          </div>
+        )}
+        {this.props.post.selectedTags.length > 0 && (
+          <div style={{ display: "flex", alignItems: "center" }}>
+            Tags :
+            {this.props.post.selectedTags.map((tag, index) => (
+              <div key={index} className="tag" style={{ margin: "6px 6px" }}>
+                <Typography variant="subtitle1">{tag.name}</Typography>
+              </div>
+            ))}
+          </div>
+        )}
         <div className="buttons">
           <IconButton
             aria-label="delete"
-            color={this.setLikeDislikes(this.props.post.voters, "like")}
+            color={this.setLikeDislikes(this.props.post, "like")}
             onClick={(e) => this.vote(e, this.props.post._id, true)}
           >
             <ThumbUpAltIcon />
@@ -339,7 +403,7 @@ export default class Post extends React.Component {
           {this.props.post.likes}
           <IconButton
             aria-label="delete"
-            color={this.setLikeDislikes(this.props.post.voters, "dislike")}
+            color={this.setLikeDislikes(this.props.post, "dislike")}
             onClick={(e) => this.vote(e, this.props.post._id, false)}
           >
             <ThumbDownIcon />
@@ -471,3 +535,5 @@ export default class Post extends React.Component {
     );
   }
 }
+
+export default withRouter(Post);

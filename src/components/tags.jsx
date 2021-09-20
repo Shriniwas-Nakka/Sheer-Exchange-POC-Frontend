@@ -78,11 +78,6 @@ export default class Tags extends Component {
             <div key={index} className="tag">
               <Typography
                 variant="subtitle1"
-                // style={{
-                //   margin: "6px 0px 0px 10px",
-                //   textTransform: "capitalize",
-                //   color: "grey",
-                // }}
               >
                 {tag.name}
               </Typography>

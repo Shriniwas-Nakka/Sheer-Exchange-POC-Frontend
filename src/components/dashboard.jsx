@@ -6,11 +6,16 @@ import IconButton from "@material-ui/core/IconButton";
 import AddIcon from "@material-ui/icons/Add";
 import HighlightOffIcon from "@material-ui/icons/HighlightOff";
 import axios from "axios";
+import Autocomplete from "@material-ui/lab/Autocomplete";
 
 export default class Dashboard extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      users: [],
+      tags: [],
+      taggedUsers: [],
+      selectedTags: [],
       title: "Create Poll Post",
       buttonText: "Create",
       pollId: "",
@@ -27,7 +32,7 @@ export default class Dashboard extends React.Component {
   }
 
   componentDidMount() {
-    console.log(this.props.location.state);
+    // console.log(this.props.location.state);
     let data = this.props.location.state;
     if (data) {
       this.setState({
@@ -36,6 +41,7 @@ export default class Dashboard extends React.Component {
         pollId: data._id,
         subject: data.subject,
         description: data.description,
+        taggedUsers: data.taggedUsers,
         questionId: data.question._id,
         question: data.question.question,
         options: data.question.options.map((option, index) => {
@@ -48,7 +54,35 @@ export default class Dashboard extends React.Component {
         updateMode: true,
       });
     }
+    this.getUsers();
+    this.getTags();
   }
+
+  getUsers = (value = "") => {
+    axios
+      .get(`http://localhost:5000/users?value=${value}`, {
+        headers: {
+          token: JSON.parse(sessionStorage.getItem("userdata")).token,
+        },
+      })
+      .then((response) => {
+        // console.log(response.data.data);
+        this.setState({ users: response.data.data });
+      });
+  };
+
+  getTags = (value = "") => {
+    axios
+      .get(`http://localhost:5000/tags?value=${value}`, {
+        headers: {
+          token: JSON.parse(sessionStorage.getItem("userdata")).token,
+        },
+      })
+      .then((response) => {
+        console.log(response.data.data);
+        this.setState({ tags: response.data.data });
+      });
+  };
 
   handleOptions = () => {
     if (this.state.options.length < 20 && this.state.options.length >= 2) {
@@ -78,10 +112,13 @@ export default class Dashboard extends React.Component {
         pollId: this.state.pollId,
         subject: this.state.subject,
         description: this.state.description,
+        taggedUsers: this.state.taggedUsers,
+        tags: this.state.selectedTags,
         questionId: this.state.questionId,
         pollQuestion: this.state.question,
         location: "america",
       };
+      console.log(data);
       axios
         .put("http://localhost:5000/pollpost", data, {
           headers: {
@@ -95,6 +132,8 @@ export default class Dashboard extends React.Component {
       let data = {
         subject: this.state.subject,
         description: this.state.description,
+        taggedUsers: this.state.taggedUsers,
+        tags: this.state.selectedTags,
         location: "america",
         pollQuestion: this.state.question,
         pollOptions: this.state.options.map((option) => option.text),
@@ -115,6 +154,23 @@ export default class Dashboard extends React.Component {
           this.props.history.push("/dashboard/posts");
         });
     }
+  };
+
+  getOption = (event, option) => {
+    event.preventDefault();
+    option.length > 0 &&
+      this.setState({
+        taggedUsers: option.map((user) => user._id),
+      });
+  };
+
+  selectTag = (event, option) => {
+    console.log(option);
+    event.preventDefault();
+    option.length > 0 &&
+      this.setState({
+        selectedTags: option.map((tag) => tag._id),
+      });
   };
 
   render() {
@@ -181,7 +237,42 @@ export default class Dashboard extends React.Component {
               <AddIcon />
             </IconButton>
           </div>
-
+          <Autocomplete
+            className="mb"
+            multiple
+            id="tags-outlined"
+            options={this.state.users}
+            getOptionLabel={(option) => option.userName}
+            onChange={this.getOption}
+            // getOptionLabel={(option) => this.getOption(option)}
+            // defaultValue={[top100Films[0]]}
+            filterSelectedOptions
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="outlined"
+                label="Tag Users"
+                placeholder="Select users to tag"
+              />
+            )}
+          />
+          <Autocomplete
+            className="mb"
+            multiple
+            id="tags-outlined"
+            options={this.state.tags}
+            getOptionLabel={(option) => option.name}
+            onChange={this.selectTag}
+            filterSelectedOptions
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="outlined"
+                label="Add Tags"
+                placeholder="Select tags"
+              />
+            )}
+          />
           <Button variant="contained" color="secondary" onClick={this.post}>
             {this.state.buttonText}
           </Button>

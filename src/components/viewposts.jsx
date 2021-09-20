@@ -11,6 +11,7 @@ import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
 import Post from "./post";
 import Tags from "./tags";
+import Notification from "./notification";
 
 export default class View extends React.Component {
   constructor(props) {
@@ -334,6 +335,7 @@ export default class View extends React.Component {
               </Select>
             </FormControl>
           </div>
+          <Notification />
           <div
             style={{
               display: "flex",
@@ -360,14 +362,15 @@ export default class View extends React.Component {
           </div>
         </div>
         <Tags />
-        {this.state.posts.map((post, index) => (
-          <Post
-            index={index}
-            post={post}
-            answers={this.state.answers}
-            getAll={this.getAll}
-          />
-        ))}
+        {this.state.posts.length > 0 &&
+          this.state.posts.map((post, index) => (
+            <Post
+              index={index}
+              post={post}
+              answers={this.state.answers}
+              getAll={this.getAll}
+            />
+          ))}
       </div>
     );
   }

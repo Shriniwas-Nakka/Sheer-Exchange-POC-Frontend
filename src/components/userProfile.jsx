@@ -17,6 +17,7 @@ import Box from "@material-ui/core/Box";
 import ViewComfyIcon from "@material-ui/icons/ViewComfy";
 import EmojiPeopleIcon from "@material-ui/icons/EmojiPeople";
 import DirectionsRunIcon from "@material-ui/icons/DirectionsRun";
+import AssignmentIndIcon from "@material-ui/icons/AssignmentInd";
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -108,8 +109,8 @@ export default class UserProfile extends React.Component {
       });
   };
 
-  getAll = async () => {
-    let posts = await this.getPosts();
+  getAll = async (value = "SELF") => {
+    let posts = await this.getPosts(value);
     let postAnswers = await this.getPollAnswers();
     let array = posts.map((post) => {
       return {
@@ -119,8 +120,8 @@ export default class UserProfile extends React.Component {
           .some((element) => element),
       };
     });
-    console.log(array);
-    console.log(postAnswers);
+    console.log("answered posts --->", array);
+    // console.log("post answer", postAnswers);
     this.setState({ posts: array, answers: postAnswers });
   };
 
@@ -136,15 +137,15 @@ export default class UserProfile extends React.Component {
       });
   };
 
-  getPosts() {
+  getPosts(value) {
     return axios
-      .get("http://localhost:5000/pollposts?key=SELF", {
+      .get(`http://localhost:5000/pollposts?key=${value}`, {
         headers: {
           token: JSON.parse(sessionStorage.getItem("userdata")).token,
         },
       })
       .then((response) => {
-        console.log(response.data.data);
+        console.log("posts --->", response.data.data);
         return response.data.data;
       });
   }
@@ -186,6 +187,11 @@ export default class UserProfile extends React.Component {
       .then((response) => {
         return response.data.data;
       });
+  };
+
+  getTaggedPosts = (e, value) => {
+    e.preventDefault();
+    this.getAll(value);
   };
 
   render() {
@@ -266,9 +272,18 @@ export default class UserProfile extends React.Component {
             aria-label="icon tabs example"
             centered
           >
-            <Tab icon={<ViewComfyIcon />} aria-label="phone" />
+            <Tab
+              icon={<ViewComfyIcon />}
+              onClick={(e) => this.getTaggedPosts(e, "SELF")}
+              aria-label="phone"
+            />
             <Tab icon={<EmojiPeopleIcon />} aria-label="favorite" />
             <Tab icon={<DirectionsRunIcon />} aria-label="person" />
+            <Tab
+              icon={<AssignmentIndIcon />}
+              onClick={(e) => this.getTaggedPosts(e, "TAGGED")}
+              aria-label="person"
+            />
           </Tabs>
           <TabPanel value={this.state.value} index={0}>
             <div
@@ -359,6 +374,26 @@ export default class UserProfile extends React.Component {
                 <Divider />
               </>
             ))}
+          </TabPanel>
+          <TabPanel value={this.state.value} index={3}>
+            <div
+              style={{
+                width: "100%",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                padding: "60px 0px",
+              }}
+            >
+              {this.state.posts.map((post, index) => (
+                <Post
+                  index={index}
+                  post={post}
+                  answers={this.state.answers}
+                  getAll={this.getAll}
+                />
+              ))}
+            </div>{" "}
           </TabPanel>
         </Paper>
       </div>
