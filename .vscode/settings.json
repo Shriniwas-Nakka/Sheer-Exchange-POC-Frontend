@@ -1,0 +1,8 @@
+{
+    "appService.zipIgnorePattern": [
+        "node_modules{,/**}",
+        ".vscode{,/**}"
+    ],
+    "appService.deploySubpath": ".",
+    "appService.defaultWebAppToDeploy": "/subscriptions/c06aa52c-9f46-43b5-84bd-ac44b08ab283/resourceGroups/demo/providers/Microsoft.Web/sites/sheerexchange"
+}
